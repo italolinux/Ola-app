@@ -40,7 +40,7 @@ jobs:
 
       - name: Update manifests repo (commit & push)
         env:
-          MANIFESTS_REPO: git@github.com:italolinux/ola-manifests.git
+          MANIFESTS_REPO: git@github.com:italolinux/ola-manifest.git
         run: |
           # clone the manifests repo using SSH
           git clone $MANIFESTS_REPO manifests
