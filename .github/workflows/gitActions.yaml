@@ -52,4 +52,13 @@ jobs:
           git add .
           git commit -m "ci: update image to ${{ github.sha }}"
           git push origin main
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.TOKEN_PR}}
+          commit-message: "ci: update image to ${{ github.sha }}"
+          title: "Atualizar imagem para ${{ github.sha }}"
+          body: "Atualização automática da imagem para ${{ github.sha }}"
+          branch: "update-image-${{ github.sha }}"
+          base: "main"
 
