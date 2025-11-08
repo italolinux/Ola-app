@@ -373,14 +373,14 @@ git push origin main
 # Etapa 5 Criando a Aplicação no ArgoCD.
 O ArgoCD é uma ferramenta open-source essencial para GitOps e Continuous Delivery, especializando-se exclusivamente na etapa de deployment (CD) em Kubernetes. Como um operador nativo do Kubernetes, ele estende a plataforma através de Custom Resources e Controllers para gerenciar aplicações de forma declarativa, sincronizando automaticamente o estado do cluster com a configuração armazenada no Git. Sua abordagem focada no CD - sem tentar resolver todo o fluxo de CI/CD - permite que equipes adotem entregas contínuas com maior maturidade, segurança e qualidade, tornando-se peça fundamental nas engenharias de software mais avançadas do mundo.
 
-## 2.1 Criação do namespace do Argocd
+## 5.1 Criação do namespace do Argocd
 Para instalar o ArgoCD como operador no Kubernetes, o primeiro passo é criar um namespace dedicado chamado argocd. Execute o comando abaixo para preparar o ambiente:
 ``` powershell
 kubectl create namespace argocd
 ```
 Este namespace isolará todos os recursos do ArgoCD, seguindo as melhores práticas de organização e segurança do cluster Kubernetes.
 
-## 2.2 Instalando o argocd.
+## 5.2 Instalando o argocd.
 Agora vamos instalar o ArgoCD como um operador no Kubernetes:
 ``` powershell
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
@@ -405,7 +405,7 @@ argocd-server-58f6cdcccd-schqw                     1/1     Running   0          
 ```
 Este output do ``` kubectl get pods ``` demonstra que a instalação do ArgoCD foi bem-sucedida, com todos os sete componentes principais em execução no cluster Kubernetes. Cada pod possui uma função específica: o ``` argocd-application-controller-0 ``` é o cérebro que sincroniza as aplicações entre o Git e o cluster; o ``` argocd-server ``` fornece a API e interface web; o ``` argocd-repo-server ``` gerencia os repositórios Git; enquanto componentes como ``` argocd-redis ``` e ``` argocd-dex-server ``` fornecem cache e autenticação.
 
-## 2.3 Instalando Argocd CLI 
+## 5.3 Instalando Argocd CLI 
 O ArgoCD CLI é uma ferramenta complementar que permite interagir com o ArgoCD diretamente pelo terminal, oferecendo controle total sobre aplicações, projetos e configurações através de comandos simples. Enquanto a interface web proporciona uma visão gráfica intuitiva, o CLI agiliza operações rotineiras, automações e integrações em pipelines CI/CD.
 
 Para instalar a versão mais recente no Linux:
@@ -470,8 +470,7 @@ argocd: v3.1.9+8665140
   Platform: windows/amd64
 ```
 
-# Etapa 3 Acessar o ArgoCD localmente
-## 3.1 Port Forwarding
+## 5.4 Acessar o ArgoCD localmente
 Para acessar o argocd precisamos fazer um port forwarding do Kubernetes que cria uma conexão segura e temporária entre uma máquina local e um recurso específico (normalmente um Pod ou Service) dentro de um cluster Kubernetes. Isso permite acesso local a aplicações ou serviços executando dentro do cluster como se estivessem rodando localmente, sem expô-los externamente. É utilizado principalmente para desenvolvimento, depuração e testes.
 
 ```powershell
@@ -483,7 +482,7 @@ Para acessar o argocd coloque o endereço ``` https://localhost:8080 ``` no seu 
 
 <img width="1790" height="636" alt="Captura de tela 2025-10-26 152553" src="https://github.com/user-attachments/assets/d969042f-08c6-487f-ad88-12f4993dc519" />
 
-## 3.2 Fazendo login no argocd
+## 5.5 Fazendo login no argocd
 Precisamos fazer login no argocd, o usuário padrão dele é ``` admin ``` e a senha temos que descobrir usando o comando:
 
 **Para linux**
