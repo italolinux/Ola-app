@@ -38,31 +38,30 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan github.com >> ~/.ssh/known_hosts
+  update-manifest:
+     needs: build-and-update
+     runs-on: ubuntu-latest
+    
+     steps:
+      - name: Checkout manifests repository
+        uses: actions/checkout@v4
+        with:
+          repository: italolinux/ola-manifest
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-update-manifest:
-  needs: build-and-push
-  runs-on: ubuntu-latest
-
-  steps:
-    - name: Checkout manifests repository
-      uses: actions/checkout@v4
-      with:
-        repository: italolinux/ola-manifest
-        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-    - name: Update image tag
-      run: |
+      - name: Update image tag
+        run: |
           sed -i "s|italolinux/hello-app:.*|italolinux/hello-app:${{ github.sha }}|g" manifests/deployment.yaml
 
-    - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v6
-      with:
-        token: ${{ secrets.TOKEN_PR }}
-        commit-message: "ci: update image to ${{ github.sha }}"
-        title: "Atualizar imagem para ${{ github.sha }}"
-        body: "Atualização automática da imagem Docker para `${{ github.sha }}`"
-        branch: "update-image-${{ github.sha }}"
-        base: "main"
-        path: "manifests"
-        delete-branch: true
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.TOKEN_PR }}
+          commit-message: "ci: update image to ${{ github.sha }}"
+          title: "Atualizar imagem para ${{ github.sha }}"
+          body: "Atualização automática da imagem Docker para `${{ github.sha }}`"
+          branch: "update-image-${{ github.sha }}"
+          base: "main"
+          path: "manifests"
+          delete-branch: true
 
