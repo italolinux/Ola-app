@@ -566,6 +566,43 @@ Vamos verificar se o pod da aplicação foi criado com o comando:
 ``` powershell
 Kubectl get pods
 ```
+Vai retornar:
+
+<img width="762" height="72" alt="image" src="https://github.com/user-attachments/assets/4e9ca0ad-1d40-48a3-a74d-73d06cf8747b" />
+
+Na interface gráfica vai estar assim:
+
+<img width="1873" height="821" alt="image" src="https://github.com/user-attachments/assets/db29b5ed-f0fa-483d-9c1c-fd024644f0f4" />
+
+# Etapa 6 Acessar e testar a aplicação localmente
+Igual para acessar o argocd tivemos que fazer um port forwarding, faremos para o ```ola-app```.
+Para isso vamos ver os serviços da aplicação.
+```powershell
+kubectl get svc
+```
+Vai retornar:
+
+<img width="827" height="50" alt="image" src="https://github.com/user-attachments/assets/290ee0e8-c431-4468-8fe4-e7cc7854a883" />
+
+Como identificamos o serviço, agora vamos fazer o port-forward.
+
+```powershell
+kubectl port-forward svc/hello-app 80:80
+```
+Agora é só acessar no navegador o endereço ``` http://localhost ```.
+
+<img width="1907" height="395" alt="image" src="https://github.com/user-attachments/assets/aaaa5954-3a64-455a-92a8-131d2396a90d" />
+
+Vamos fazer um teste via ```curl``` em outro terminal.
+
+<img width="342" height="50" alt="image" src="https://github.com/user-attachments/assets/ba0699c7-ee14-44c6-ab64-ddd7a634fb52" />
+
+Para validar o ciclo completo dessa pipeline CI/CD, vamos alterar a mensagem no arquivo main.py e observar a automação em ação.
+
+Altere a mensagem no código para **"Projeto finalizado com sucesso"** e envie a modificação para o repositório ```ola-app``` utilizando **git push**. Isto irá disparar automaticamente a pipeline de CI/CD, que criará um novo **pull request** no repositório ```ola-manifest``.
+
+Aprove este pull request para dar continuidade ao fluxo de deploy. Com a aprovação, o ArgoCD detectará automaticamente a alteração na "fonte da verdade" e sincronizará as mudanças no cluster Kubernetes, atualizando a aplicação conforme demonstrado na imagem de evidência.
+
 
 
 
