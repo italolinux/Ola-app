@@ -52,6 +52,7 @@ jobs:
           git add .
           git commit -m "ci: update image to ${{ github.sha }}"
           git push origin main
+          
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
