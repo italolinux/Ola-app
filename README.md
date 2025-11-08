@@ -290,9 +290,24 @@ jobs:
           branch: "update-image-${{ github.sha }}"
           base: "main"
 ```
-O workflow estará pronto para ser executado automaticamente, quando ocorre o **push**.
+Com esta configuração, você terá uma pipeline de CI totalmente funcional que será acionada automaticamente a cada alteração no código da aplicação, garantindo um processo contínuo de integração e entrega.
 
-Com esta configuração, a Etapa 2 estará finalizada e você terá uma pipeline de CI totalmente funcional que será acionada automaticamente a cada alteração no código da aplicação, garantindo um processo contínuo de integração e entrega.
+O workflow estará pronto para ser executado automaticamente, quando ocorrer o **push**.
+
+Se Workflow estiver certo, a pipeline gerada será essa:
+<img width="1548" height="627" alt="image" src="https://github.com/user-attachments/assets/b14bfeeb-8569-43c9-ab6e-2c92cb63cbd9" />
+
+A imagem criado no Docker Hub, será essa:
+
+<img width="1877" height="538" alt="image" src="https://github.com/user-attachments/assets/299da066-f28e-4166-8be4-8e6ac0be2514" />
+
+Abaixo mostra a evidência do pull request para o ```ola-manifest```:
+
+<img width="1850" height="829" alt="Captura de tela 2025-11-08 124027" src="https://github.com/user-attachments/assets/daac4ac4-8452-4646-917e-222e442bdc5c" />
+
+
+
+
 
 
 
