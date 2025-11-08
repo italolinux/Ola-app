@@ -158,3 +158,18 @@ Este comando criará:
 * Uma chave pública **(github-ola-app.pub)** - que será adicionada às deploy keys do repositório hello-manifests
 
 Essa configuração permitirá a autenticação segura entre os repositórios durante a automação do CI/CD, Mas não se preocupe agora, vou ensinar a fazer o deploy e o secrets nas etapas seguintes.
+
+## 3.3 Personal Access Token (PAT)
+Enquanto a chave SSH é utilizada para operações Git, a criação de Pull Requests opera através da API do GitHub, exigindo um Personal Access Token (PAT). Para gerar este token, siga os passos abaixo:
+* Acesse as configurações do GitHub: No seu perfil, navegue para Settings > Developer settings > Personal access tokens > Tokens (classic)
+
+*Crie um novo token: Clique em Generate new Token
+
+Configure o token:
+
+* Note: Atribua um nome descritivo, como actions-cross-repo-pr
+
+* Expiration: Defina uma data de validade adequada
+
+* Select scopes: Marque a caixa de seleção principal repo para conceder permissões de repositório
+
