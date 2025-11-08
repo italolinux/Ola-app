@@ -305,8 +305,216 @@ Abaixo mostra a evidência do pull request para o ```ola-manifest```:
 
 <img width="1850" height="829" alt="Captura de tela 2025-11-08 124027" src="https://github.com/user-attachments/assets/daac4ac4-8452-4646-917e-222e442bdc5c" />
 
+# Etapa 4 Criação dos Manifestos
+Com a pipeline de CI operando corretamente, o próximo passo é definir a execução da aplicação dentro do cluster Kubernetes. Para isso, é necessário criar os arquivos de manifesto no repositório ```ola-manifest```. Estes arquivos servirão como a "fonte da verdade" que o ArgoCD utilizará para gerenciar e sincronizar o estado da aplicação no cluster, garantindo que a infraestrutura sempre reflita o que está definido no controle de versão.
 
+## 4.1 Clone do repositório de Manifestos.
+Para editar e criar os arquivos de manifestos no repositório ```ola-manifest```, precisamos clonar ele, para o visual studio.
+Em um terminal bash no visual studio:
+``` bash
+git clone https://github.com/SEU_USUARIO/ola-manifest.git
+cd ola-manifest
+```
+## 4.2 Manifesto de deployment
+O **Deployment** é um objeto do Kubernetes responsável por gerenciar a implantação e escalabilidade da aplicação, assegurando que um número específico de réplicas (pods) permaneça em execução conforme definido.
 
+Para implementá-lo, criaremos o arquivo ```deployment.yaml``` com o seguinte conteúdo de configuração:
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-app
+  labels:
+    app: hello-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-app
+  template:
+    metadata:
+      labels:
+        app: hello-app
+    spec:
+      containers:
+        - name: hello-app
+          image: DOCKER_USERNAME/hello-app:e737866e28422de83fc3f9b8a79aa912a6d2a293
+          ports:
+            - containerPort: 80
+```
+Lembre-se de substituir **DOCKER_USERNAME** pelo seu nome de usuário do Docker Hub.
+
+## 4.3 Manifesto de Service
+O **Service** é um objeto do Kubernetes que expõe a aplicação como um serviço de rede, criando um ponto de acesso estável e permanente para os pods gerenciados pelo Deployment.
+
+Para implementá-lo, criaremos o arquivo ```service.yaml``` com a seguinte configuração:
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-app
+spec:
+  selector:
+    app: hello-app
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+```
+## 4.4 Enviar os arquivos para o Github
+Após a criação dos dois arquivos de manifesto, eles devem ser commitados e enviados via push para a branch main do repositório ```ola-manifest```, estabelecendo assim a configuração base que será utilizada pelo ArgoCD para o deploy da aplicação no cluster Kubernetes.
+```
+git add .
+git commit -m "Adicionado Manifestos"
+git push origin main
+```
+# Etapa 5 Criando a Aplicação no ArgoCD.
+O ArgoCD é uma ferramenta open-source essencial para GitOps e Continuous Delivery, especializando-se exclusivamente na etapa de deployment (CD) em Kubernetes. Como um operador nativo do Kubernetes, ele estende a plataforma através de Custom Resources e Controllers para gerenciar aplicações de forma declarativa, sincronizando automaticamente o estado do cluster com a configuração armazenada no Git. Sua abordagem focada no CD - sem tentar resolver todo o fluxo de CI/CD - permite que equipes adotem entregas contínuas com maior maturidade, segurança e qualidade, tornando-se peça fundamental nas engenharias de software mais avançadas do mundo.
+
+## 2.1 Criação do namespace do Argocd
+Para instalar o ArgoCD como operador no Kubernetes, o primeiro passo é criar um namespace dedicado chamado argocd. Execute o comando abaixo para preparar o ambiente:
+``` powershell
+kubectl create namespace argocd
+```
+Este namespace isolará todos os recursos do ArgoCD, seguindo as melhores práticas de organização e segurança do cluster Kubernetes.
+
+## 2.2 Instalando o argocd.
+Agora vamos instalar o ArgoCD como um operador no Kubernetes:
+``` powershell
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+```
+Este comando baixa e aplica todos os manifestos necessários para ter o ArgoCD funcionando como controlador GitOps no seu cluster.
+
+Vamos ver se os pods do ArgoCD foram criados com sucesso:
+
+``` powershell
+kubectl get pods -n argocd
+```
+Deve retornar:
+``` powershell
+NAME                                               READY   STATUS    RESTARTS   AGE
+argocd-application-controller-0                    1/1     Running   0          98s
+argocd-applicationset-controller-79887fd6-d7zdj    1/1     Running   0          98s
+argocd-dex-server-655b4448b5-kzhrv                 1/1     Running   0          98s
+argocd-notifications-controller-77fd6f9885-hrtq8   1/1     Running   0          98s
+argocd-redis-7fdcfb697b-df7mk                      1/1     Running   0          98s
+argocd-repo-server-7d969c8c68-n95gv                1/1     Running   0          98s
+argocd-server-58f6cdcccd-schqw                     1/1     Running   0          98s
+```
+Este output do ``` kubectl get pods ``` demonstra que a instalação do ArgoCD foi bem-sucedida, com todos os sete componentes principais em execução no cluster Kubernetes. Cada pod possui uma função específica: o ``` argocd-application-controller-0 ``` é o cérebro que sincroniza as aplicações entre o Git e o cluster; o ``` argocd-server ``` fornece a API e interface web; o ``` argocd-repo-server ``` gerencia os repositórios Git; enquanto componentes como ``` argocd-redis ``` e ``` argocd-dex-server ``` fornecem cache e autenticação.
+
+## 2.3 Instalando Argocd CLI 
+O ArgoCD CLI é uma ferramenta complementar que permite interagir com o ArgoCD diretamente pelo terminal, oferecendo controle total sobre aplicações, projetos e configurações através de comandos simples. Enquanto a interface web proporciona uma visão gráfica intuitiva, o CLI agiliza operações rotineiras, automações e integrações em pipelines CI/CD.
+
+Para instalar a versão mais recente no Linux:
+``` bash
+curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+rm argocd-linux-amd64
+```
+Para instalar no windows, vamos usar o Invoke-WebRequest no Power shell.
+
+Invoke-WebRequest é um cmdlet nativo do PowerShell para fazer requisições HTTP/HTTPS, similar ao curl no Linux/Mac.
+
+Primeiro vamos pegar a versão mais recente do argocd e armazenar na variável ```$version```.
+```powershell
+$version = (Invoke-RestMethod https://api.github.com/repos/argoproj/argo-cd/releases/latest).tag_name
+```
+* ``` Invoke-RestMethod ```
+   * Faz uma requisição à API do GitHub.
+
+   * Consulta o endpoint de latest release do ArgoCD.
+
+   * Retorna automaticamente como objeto (não como texto puro).
+
+* ``` https://api.github.com/repos/argoproj/argo-cd/releases/latest ```
+   * Endpoint oficial da API do GitHub.
+
+   * Retorna informações da última versão estável do ArgoCD.
+
+* ``` .tag_name ```
+   * Acessa a propriedade que contém o número da versão. (Exemplo: "v2.8.4", "v2.9.0")
+
+* ```$version =```
+   * Armazena o resultado na variável $version para uso posterior
+ 
+Substitua ``` $version ``` no comando abaixo pela versão do Argo CD que você deseja baixar:
+
+```powershell
+$url = "https://github.com/argoproj/argo-cd/releases/download/" + $version + "/argocd-windows-amd64.exe"
+$output = "argocd.exe"
+
+Invoke-WebRequest -Uri $url -OutFile $outputkubectl 
+```
+Agora precisamos mover o arquivo para o seu PATH.
+
+```powersheell
+[Environment]::SetEnvironmentVariable("Path", "$env:Path;C:\Path\To\ArgoCD-CLI", "User")
+```
+Depois de concluir as instruções acima, você agora poderá executar ``` argocd ``` comandos, para fazer um teste rode o comando:
+
+```powershell
+argocd version
+```
+Vai retornar algo parecido com isso.
+
+```powershell
+argocd: v3.1.9+8665140
+  BuildDate: 2025-10-17T22:07:41Z
+  GitCommit: 8665140f96f6b238a20e578dba7f9aef91ddac51
+  GitTreeState: clean
+  GoVersion: go1.24.6
+  Compiler: gc
+  Platform: windows/amd64
+```
+
+# Etapa 3 Acessar o ArgoCD localmente
+## 3.1 Port Forwarding
+Para acessar o argocd precisamos fazer um port forwarding do Kubernetes que cria uma conexão segura e temporária entre uma máquina local e um recurso específico (normalmente um Pod ou Service) dentro de um cluster Kubernetes. Isso permite acesso local a aplicações ou serviços executando dentro do cluster como se estivessem rodando localmente, sem expô-los externamente. É utilizado principalmente para desenvolvimento, depuração e testes.
+
+```powershell
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+```
+* recomendo usar outro terminal para rodar esse comando, pois ele vai ficar rodando a aplicação.
+
+Para acessar o argocd coloque o endereço ``` https://localhost:8080 ``` no seu navegador 
+
+<img width="1790" height="636" alt="Captura de tela 2025-10-26 152553" src="https://github.com/user-attachments/assets/d969042f-08c6-487f-ad88-12f4993dc519" />
+
+## 3.2 Fazendo login no argocd
+Precisamos fazer login no argocd, o usuário padrão dele é ``` admin ``` e a senha temos que descobrir usando o comando:
+
+**Para linux**
+```bash
+kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d
+```
+
+**Como o windows não reconhece base64, temos que decodificar usando:**
+
+```powershell
+kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | %{ [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) }
+```
+* Decodificação do base64
+  * % → Alias para ForEach-Object
+
+  * [System.Convert]::FromBase64String($_) → Converte base64 para bytes
+
+  * [System.Text.Encoding]::UTF8.GetString() → Converte bytes para texto legível
+ 
+Descobrindo a senha podemos fazer o acesso no argocd com o comando:
+
+```powershell
+argocd login localhost:8080
+```
+Ele vai pedir o nome de usuário e depois a senha que descobrimos anteriormente, Depois ele estabelece a conexão.
+
+``` powershell
+'admin:login' logged in successfully
+Context 'localhost:8080' updated
+```
+Podemos entrar pelo interface gráfica, colocando o nome de usuário e a senha.
 
 
 
