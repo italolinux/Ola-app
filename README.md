@@ -225,7 +225,70 @@ Para implementá-lo:
 
 * Dentro desta pasta, crie o arquivo ```gitActions.yaml``` com o conteúdo disponibilizado abaixo:
 ```
+name: CI/CD - Build & Update Manifests
 
+on:
+  push:
+    branches: [ "main" ]
+    
+    paths-ignore:
+      -  'README.md'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  build-and-update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/hello-app:${{ github.sha }}
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+  update-manifest:
+     needs: build-and-update
+     runs-on: ubuntu-latest
+    
+     steps:
+      - name: Checkout manifests repository
+        uses: actions/checkout@v4
+        with:
+          repository: italolinux/ola-manifest
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Update image tag
+        run: |
+          sed -i "s| ${{ secrets.DOCKER_USERNAME }}/hello-app:.*| ${{ secrets.DOCKER_USERNAME }}/hello-app:${{ github.sha }}|g" deployment.yaml
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.TOKEN_PR }}
+          commit-message: "ci: update image to ${{ github.sha }}"
+          title: "Atualizar imagem para ${{ github.sha }}"
+          body: "Atualização automática da imagem Docker para `${{ github.sha }}`"
+          branch: "update-image-${{ github.sha }}"
+          base: "main"
 ```
 O workflow estará pronto para ser executado automaticamente, quando ocorre o **push**.
 
