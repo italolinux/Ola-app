@@ -62,6 +62,5 @@ jobs:
           body: "Atualização automática da imagem Docker para `${{ github.sha }}`"
           branch: "update-image-${{ github.sha }}"
           base: "main"
-          path: "manifests"
           delete-branch: true
 
