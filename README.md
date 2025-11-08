@@ -163,13 +163,78 @@ Essa configuração permitirá a autenticação segura entre os repositórios du
 Enquanto a chave SSH é utilizada para operações Git, a criação de Pull Requests opera através da API do GitHub, exigindo um Personal Access Token (PAT). Para gerar este token, siga os passos abaixo:
 * Acesse as configurações do GitHub: No seu perfil, navegue para Settings > Developer settings > Personal access tokens > Tokens (classic)
 
-*Crie um novo token: Clique em Generate new Token
+*Crie um novo token: Clique em **Generate new Token**.
 
 Configure o token:
 
-* Note: Atribua um nome descritivo, como actions-cross-repo-pr
+* **Note:** Atribua um nome descritivo, como ```Automacao-pull-request```
 
-* Expiration: Defina uma data de validade adequada
+* **Expiration:** Defina uma data de validade adequada
 
-* Select scopes: Marque a caixa de seleção principal repo para conceder permissões de repositório
+* **Select scopes:** Marque a caixa de seleção principal repo para conceder permissões de repositório
+
+## 3.4 Criando os Secrets no github
+Para garantir que o GitHub Actions possa se conectar ao Docker Hub de forma segura, sem expor credenciais diretamente no código, utilizamos os **"Secrets"** do repositório. Eles funcionam como um cofre de senhas para a automação. Siga estas etapas:
+
+* Acesse as configurações do repositório da aplicação no GitHub.(no meu caso **ola-app**)
+
+* Navegue até a seção **"Secrets and variables"** > **"Actions"**.
+
+* Clique em **"New repository secret"** para adicionar cada credencial necessária.
+
+Configure os seguintes secrets:
+
+* ```DOCKER_USERNAME```: Seu nome de usuário do Docker Hub.
+
+* ```DOCKER_PASSWORD```: Token de acesso do Docker Hub, **criado na etapa 3.1**.
+
+* ```SSH_PRIVATE_KEY```: Chave SSH privada para acesso ao repositório de manifests, no meu caso ```github-ola-app``` criado na **etapa 3.2**.
+
+* ```TOKEN_PR```: Cole o **Personal Access Token** gerado.
+
+<img width="1785" height="502" alt="image" src="https://github.com/user-attachments/assets/2eafdcac-209c-4d91-ad89-ae3ddf3e4fdb" />
+
+Esta abordagem mantém as informações sensíveis protegidas enquanto permite que o workflow as utilize durante a execução das pipelines.
+
+
+## 3.5 Deploy key no Github
+A chave pública deve ser adicionada ao repositório que receberá o acesso, neste caso, o ```ola-manifest```.
+
+Siga estas etapas para configurar:
+
+* Acesse o repositório ```ola-manifest``` no GitHub.
+
+* Navegue até **Settings** > **Deploy keys** e clique em **Add deploy key**.
+
+Preencha os campos:
+
+* Title: Atribua um nome identificador, como ```ola-app-workflow```.
+
+* Key: Cole o conteúdo completo do arquivo da chave pública (ex: ```github-ola-app.pub```)
+
+* Marque a opção **"Allow write access"** para permitir que a chave realize operações de push
+
+Esta configuração habilita a autenticação segura via SSH, permitindo que o workflow do ```ola-app``` faça push de alterações automaticamente no repositório de manifestos.
+
+## 3.6 Criando o Workflow
+Com todas as permissões e segredos devidamente configurados, a etapa final consiste em criar o arquivo de workflow que orquestrará toda a automação de CI/CD. Este arquivo atuará como o cérebro da pipeline.
+
+Para implementá-lo:
+
+* Crie a estrutura de pastas .github/workflows/ no repositório da aplicação ```ola-app```.
+
+* Dentro desta pasta, crie o arquivo ```gitActions.yaml``` com o conteúdo disponibilizado abaixo:
+```
+
+```
+O workflow estará pronto para ser executado automaticamente, quando ocorre o **push**.
+
+Com esta configuração, a Etapa 2 estará finalizada e você terá uma pipeline de CI totalmente funcional que será acionada automaticamente a cada alteração no código da aplicação, garantindo um processo contínuo de integração e entrega.
+
+
+
+
+
+
+
 
