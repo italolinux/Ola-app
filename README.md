@@ -142,5 +142,19 @@ Esta configuração permitirá que o GitHub Actions faça push das imagens Docke
 ## 3.2 Criando o par de chaves para o acesso entre os repositórios
 Para que o workflow no repositório ```ola-app``` tenha permissão para escrever (git push) no repositório ```ola-manifest```, é necessário configurar um par de chaves SSH. Utilize o comando abaixo para gerar as chaves:
 ```
-
+ssh-keygen -t ed25519 -C "your_email@example.com"
 ```
+Se estiver usando um sistema herdado que não dá suporte ao algoritmo Ed25519, use:
+```
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+```
+* Escreva o nome da chave, (ex: github-ola-app).
+* Sem senha (passphrase), pois o GitHub Actions não sabe digitá-la.
+
+Este comando criará:
+
+* Uma chave privada **(github-ola-app)** - que será armazenada como secret no GitHub
+
+* Uma chave pública **(github-ola-app.pub)** - que será adicionada às deploy keys do repositório hello-manifests
+
+Essa configuração permitirá a autenticação segura entre os repositórios durante a automação do CI/CD, Mas não se preocupe agora, vou ensinar a fazer o deploy e o secrets nas etapas seguintes.
