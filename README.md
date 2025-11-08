@@ -370,7 +370,7 @@ git add .
 git commit -m "Adicionado Manifestos"
 git push origin main
 ```
-# Etapa 5 Criando a Aplicação no ArgoCD.
+# Etapa 5 Criar Aplicação no ArgoCD.
 O ArgoCD é uma ferramenta open-source essencial para GitOps e Continuous Delivery, especializando-se exclusivamente na etapa de deployment (CD) em Kubernetes. Como um operador nativo do Kubernetes, ele estende a plataforma através de Custom Resources e Controllers para gerenciar aplicações de forma declarativa, sincronizando automaticamente o estado do cluster com a configuração armazenada no Git. Sua abordagem focada no CD - sem tentar resolver todo o fluxo de CI/CD - permite que equipes adotem entregas contínuas com maior maturidade, segurança e qualidade, tornando-se peça fundamental nas engenharias de software mais avançadas do mundo.
 
 ## 5.1 Criação do namespace do Argocd
@@ -515,6 +515,57 @@ Context 'localhost:8080' updated
 ```
 Podemos entrar pelo interface gráfica, colocando o nome de usuário e a senha.
 
+## 5.6 Criando a Aplicação no ArgoCD.
+Agora que o cluster Kubernetes está integrado ao ArgoCD, o próximo passo é criar a aplicação. Para isso, precisamos conectar um repositório Git contendo os manifestos Kubernetes da nossa aplicação. O ArgoCD monitorará continuamente este repositório e automaticamente implantará e sincronizará as alterações no cluster sempre que detectar atualizações no código-fonte.
+
+Para criarmos a aplicação usamos o comando:
+
+```powershell
+argocd app create ola-app `
+   --repo https://github.com/italolinux/ola-manifest.git `
+   --path . `
+   --dest-server https://kubernetes.default.svc `
+   --dest-namespace default
+```
+**OBS:** Para o linux é o mesmo comando só trocar ``` ` ``` por ``` \ ```.
+
+| Parâmetro          | Significado                                       |
+| ------------------ | ------------------------------------------------- |
+| `--repo`           | Link do repositório Git (com `.git`)              |
+| `--path`           | Caminho dentro do repositório onde estão os YAMLs |
+| `--dest-server`    | Cluster onde a app será implantada                |
+| `--dest-namespace` | Namespace dentro do cluster                       |
+
+Vamos verificar se a nossa aplicação foi criada.
+```powershell
+argocd app list
+```
+Retorna:
+
+```powershell
+NAME            CLUSTER                         NAMESPACE  PROJECT  STATUS     HEALTH   SYNCPOLICY  CONDITIONS  REPO                                            PATH  TARGET
+argocd/ola-app  https://kubernetes.default.svc  default    default  OutOfSync  Healthy  Manual      <none>      https://github.com/italolinux/ola-manifest.git  .
+```
+Como podemos observar o status da nossa aplicação está ``` **OutOfSync** ``` e a health está ``` **Missing** ```, precisamos fazer o sync da aplicação com o argocd.
+
+```powershell
+argocd app sync ola-app
+```
+* O que acontece durante o ``` sync ```:
+    
+    *  Conecta ao repositório Git e busca os manifests mais recentes.
+
+    * Compara o estado atual do cluster com o estado desejado no Git.
+
+    * Aplica as diferenças no cluster Kubernetes.
+
+    * Cria/atualiza todos os recursos definidos no deployment.yaml e service.yaml.
+
+Vamos verificar se o pod da aplicação foi criado com o comando:
+
+``` powershell
+Kubectl get pods
+```
 
 
 
