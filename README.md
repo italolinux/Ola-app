@@ -599,10 +599,16 @@ Vamos fazer um teste via ```curl``` em outro terminal.
 
 Para validar o ciclo completo dessa pipeline CI/CD, vamos alterar a mensagem no arquivo main.py e observar a automação em ação.
 
-Altere a mensagem no código para **"Projeto finalizado com sucesso"** e envie a modificação para o repositório ```ola-app``` utilizando **git push**. Isto irá disparar automaticamente a pipeline de CI/CD, que criará um novo **pull request** no repositório ```ola-manifest``.
+Altere a mensagem no código para **"Projeto finalizado com sucesso"** e envie a modificação para o repositório ```ola-app``` utilizando **git push**. Isto irá disparar automaticamente a pipeline de CI/CD, que criará um novo **pull request** no repositório ```ola-manifest```.
 
 Aprove este pull request para dar continuidade ao fluxo de deploy. Com a aprovação, o ArgoCD detectará automaticamente a alteração na "fonte da verdade" e sincronizará as mudanças no cluster Kubernetes, atualizando a aplicação conforme demonstrado na imagem de evidência.
 
+<img width="518" height="232" alt="image" src="https://github.com/user-attachments/assets/0e527f18-c52a-4b51-aaf7-d3f7d66ba52e" />
+
+# Conclusão
+Este projeto implementa com êxito um pipeline completo de **CI/CD**, incorporando ferramentas modernas de **DevOps** e a metodologia **GitOps**. A partir de uma simples modificação no código-fonte, todo o ciclo — desde o build e a publicação da imagem Docker, até a atualização dos manifestos e o deploy no cluster Kubernetes — é executado de forma **automatizada, segura e totalmente rastreável.**
+
+A automação estabelecida **reduz significativamente a intervenção manual**, minimiza riscos de erro e acelera a entrega de valor, demonstrando na prática a eficiência e os benefícios da **Integração e Entrega Contínuas** em ambientes de produção.
 
 
 
